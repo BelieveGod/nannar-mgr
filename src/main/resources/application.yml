@@ -73,3 +73,7 @@ mybatis-plus:
 logging:
   level:
     root: "info"
+
+nannar:
+  jwt:
+    base64urlSecretKey: 75iYMEEriWW8kf2ZFxWGH0mvMy6jaYEj1xBVxhGA31I
