@@ -2,6 +2,8 @@ package cn.nannar.mgr.nannarmgr.modular.system.user.service.impl;
 
 import cn.nannar.mgr.nannarmgr.modular.security.UserBO;
 import cn.nannar.mgr.nannarmgr.modular.system.user.entity.SysUser;
+import cn.nannar.mgr.nannarmgr.modular.system.user.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +21,8 @@ import java.util.HashMap;
  * @date 2022/10/24
  */
 @Service
-public class UserServiceImpl implements UserDetailsService {
+@Slf4j
+public class UserServiceImpl implements UserDetailsService, UserService {
 
     @Autowired
     @Lazy
@@ -54,5 +57,18 @@ public class UserServiceImpl implements UserDetailsService {
         SysUser sysUser1 = stringSysUserHashMap.get(username);
         UserBO userBO = new UserBO(Collections.emptyList(), sysUser1);
         return userBO;
+    }
+
+    @Override
+    public SysUser getUser(String username) {
+        log.info("getUser 被调用了");
+        if("user".equals(username)){
+            SysUser sysUser = new SysUser();
+            sysUser.setUsername("user");
+            sysUser.setPassword("*****");
+            sysUser.setId(1L);
+            return sysUser;
+        }
+        return null;
     }
 }

@@ -49,6 +49,25 @@ spring:
         #deny: 192.168.1.100
   mvc:
     static-path-pattern: /resoure/**
+  #Redis 连接
+  redis:
+#    host: localhost
+#    port: 6379
+#    username:
+#    password:
+
+  # 缓存
+  cache:
+    type: redis
+    cache-names: sys,biz
+    # 如果启用jcache的话，是这个配置
+    jcache:
+      provider: org.ehcache.jsr107.EhcacheCachingProvider
+      config: ehcache.xml
+    # 如果启用redis的话是以下配置
+    redis:
+      time-to-live: "2m"
+
 #mybatis plus 设置
 mybatis-plus:
   # mapper 的位置，支持ant风格的路径，可以是数组
@@ -73,6 +92,13 @@ mybatis-plus:
 logging:
   level:
     root: "info"
+  charset:
+    file: UTF-8
+  file:
+    name: ./log/nannar-mgr.log
+  logback:
+    rollingpolicy:
+      max-history: 30
 
 nannar:
   jwt:

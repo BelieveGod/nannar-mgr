@@ -13,13 +13,18 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties("nannar")
 @Component
 public class NannarProperties {
-
+    /**
+     * Jwt的配置
+     */
     @NestedConfigurationProperty
     private JwtProperties jwt;
 
 
     @Data
     public static class JwtProperties{
+        /**
+         * base64的密钥
+         */
         private String base64urlSecretKey;
     }
 }
