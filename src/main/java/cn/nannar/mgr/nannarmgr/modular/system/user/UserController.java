@@ -1,14 +1,20 @@
 package cn.nannar.mgr.nannarmgr.modular.system.user;
 
-import cn.hutool.core.collection.CollUtil;
+import cn.nannar.mgr.nannarmgr.common.util.RedisUtil;
 import cn.nannar.mgr.nannarmgr.common.web.RestResponse;
 import cn.nannar.mgr.nannarmgr.modular.security.JwtHelper;
+import cn.nannar.mgr.nannarmgr.modular.system.user.entity.SysLog;
 import cn.nannar.mgr.nannarmgr.modular.system.user.entity.SysUser;
 import cn.nannar.mgr.nannarmgr.modular.system.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.query.Criteria;
+import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
+import org.springframework.data.elasticsearch.core.query.Query;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,13 +23,13 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.security.Principal;
+import java.util.Date;
 import java.util.Enumeration;
 
 /**
@@ -45,7 +51,10 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    private RedisTemplate<Object,Object> redisTemplate;
+    private MongoTemplate mongoTemplate;
+
+    @Autowired
+    private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
     @PostMapping("/login")
     public RestResponse login(@RequestParam String username, @RequestParam String password){
@@ -94,9 +103,33 @@ public class UserController {
     @GetMapping("/get")
     public RestResponse getUser(@RequestParam String username){
         SysUser user = userService.getUser(username);
-        redisTemplate.boundValueOps("redispre:" + username).set(user);
-        Object o =  redisTemplate.boundValueOps("redispre:" + username).get();
+        RedisUtil.setValue("redispre:"+username,user);
+        SysUser o = RedisUtil.getValue("redispre:" + username, SysUser.class);
         System.out.println("o.getClass().getName() = " + o.getClass().getName());
+//        mongoTemplate.insert(o);
+        SysLog sysLog = new SysLog();
+        sysLog.setId(1L);
+        sysLog.setAction("获取用户");
+        sysLog.setUsername(username);
+        sysLog.setLogTime(new Date());
+        elasticsearchRestTemplate.save(sysLog);
+
+        Criteria criteria = new Criteria("username").is(username);
+        CriteriaQuery criteriaQuery = new CriteriaQuery(criteria);
+        SearchHit<SysLog> sysLogSearchHit = elasticsearchRestTemplate.searchOne(criteriaQuery, SysLog.class);
+        if(sysLogSearchHit!=null){
+            log.info("elasticsearch 结果：{}", sysLogSearchHit.toString());
+
+            SysLog content = sysLogSearchHit.getContent();
+            if(content==null){
+                log.warn("不存在elasticsearch的log");
+            }else{
+                log.info("elasticsearch的结果：{}", content.toString());
+            }
+        }else{
+            log.warn("不存在elasticsearch的log");
+        }
+
         return RestResponse.success(user);
     }
 }

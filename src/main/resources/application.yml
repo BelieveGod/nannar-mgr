@@ -55,6 +55,11 @@ spring:
 #    port: 6379
 #    username:
 #    password:
+  #MongoDB
+  data:
+    mongodb:
+      database: nannar-mgr
+
 
   # 缓存
   cache:
@@ -67,6 +72,9 @@ spring:
     # 如果启用redis的话是以下配置
     redis:
       time-to-live: "2m"
+  # jackson
+  jackson:
+    date-format:
 
 #mybatis plus 设置
 mybatis-plus:

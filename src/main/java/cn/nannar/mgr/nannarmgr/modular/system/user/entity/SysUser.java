@@ -1,6 +1,7 @@
 package cn.nannar.mgr.nannarmgr.modular.system.user.entity;
 
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 
 /**
  * @author LTJ
@@ -8,6 +9,7 @@ import lombok.Data;
  */
 @Data
 public class SysUser {
+    @Id
     private Long id;
 
     private String username;
