@@ -53,6 +53,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         JwtFilter jwtFilter = new JwtFilter(authenticationManagerBean());
 
         http.authorizeRequests().antMatchers("/user/login").anonymous()
+                .mvcMatchers("/user/register").anonymous()
                 .anyRequest().authenticated()
                 .and()
                 // 禁用csrf

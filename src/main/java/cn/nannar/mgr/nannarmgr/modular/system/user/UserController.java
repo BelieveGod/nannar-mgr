@@ -22,6 +22,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
@@ -131,5 +132,22 @@ public class UserController {
         }
 
         return RestResponse.success(user);
+    }
+
+    @PostMapping("/register")
+    public RestResponse register(@RequestParam String username,@RequestParam String password){
+        SysUser sysUser = new SysUser();
+        sysUser.setUsername(username);
+        sysUser.setPassword(password);
+        sysUser.setIsEnable(1);
+        sysUser.setIsLocked(0);
+        userService.create(sysUser);
+        return RestResponse.success();
+    }
+
+    @GetMapping("getById")
+    public RestResponse getById(Long id){
+        SysUser byId = userService.getById(id);
+        return RestResponse.success(byId);
     }
 }

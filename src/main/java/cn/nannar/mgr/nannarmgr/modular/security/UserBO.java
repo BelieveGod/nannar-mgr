@@ -41,7 +41,7 @@ public class UserBO implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return sysUser.getLocked().equals(0);
+        return sysUser.getIsLocked().equals(0);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class UserBO implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return sysUser.getEnabled().equals(1);
+        return sysUser.getIsEnable().equals(1);
     }
 
 }

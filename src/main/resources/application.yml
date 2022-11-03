@@ -4,10 +4,10 @@ spring:
   application:
     name: nannar-mgr
   datasource:
-    username: root
-    password: 123456
-    url: jdbc:mysql://127.0.0.1:3306/nannar-mgr?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
-    driver-class-name: com.mysql.cj.jdbc.Driver
+#    username: root
+#    password: 123456
+#    url: jdbc:mysql://127.0.0.1:3306/nannar-mgr?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+#    driver-class-name: com.mysql.cj.jdbc.Driver
     druid:
       #2.连接池配置
       #初始化连接池的连接数量 大小，最小，最大
@@ -47,6 +47,59 @@ spring:
         login-password: admin
         allow: 127.0.0.1
         #deny: 192.168.1.100
+  # sharding jdbc
+  shardingsphere:
+    mode:
+      type: Standalone
+      repository:
+        type: JDBC
+    datasource:
+      names: ds0,ds1
+      ds0:
+        username: root
+        password: 123456
+        url: jdbc:mysql://127.0.0.1:3306/nannar-mgr?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        type: com.alibaba.druid.pool.DruidDataSource
+      ds1:
+        username: root
+        password: 123456
+        url: jdbc:mysql://127.0.0.1:3306/nannar-mgr_2?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        type: com.alibaba.druid.pool.DruidDataSource
+    rules:
+      sharding:
+        tables:
+          sys_user:
+#            actual-data-nodes: ds$->{0..1}.sys_user_$->{0..1}
+            actual-data-nodes: ds0.sys_user_0,ds1.sys_user_1
+            database-strategy:
+              standard:
+                sharding-column: id
+                sharding-algorithm-name: db-inline
+            table-strategy:
+              standard:
+                sharding-column: id
+                sharding-algorithm-name: user-line
+            key-generate-strategy:
+              column: id
+              key-generator-name: user-key
+        sharding-algorithms:
+          db-inline:
+            type: INLINE
+            props:
+              algorithm-expression: ds$->{id % 2}
+          user-line:
+            type: INLINE
+            props:
+              algorithm-expression: sys_user_$->{id % 2}
+        key-generators:
+          user-key:
+            type: SNOWFLAKE
+    props:
+      sql-show: true
+
+
   mvc:
     static-path-pattern: /resoure/**
   #Redis 连接
@@ -75,11 +128,14 @@ spring:
   # jackson
   jackson:
     date-format:
+  # 自动配置
+  autoconfigure:
+    exclude: com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
 
 #mybatis plus 设置
 mybatis-plus:
   # mapper 的位置，支持ant风格的路径，可以是数组
-  mapper-locations: classpath*:org/jeecg/modules/**/xml/*Mapper.xml
+  mapper-locations: classpath*:**/*Mapper.xml
   global-config:
     # 关闭MP3.0自带的banner
     banner: false
